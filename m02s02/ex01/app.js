@@ -30,6 +30,8 @@ function renderSkillInput() {
     button.after(renderSkillsUl(skillValue));
   });
 
+  // add keydown addeventlistener pentru skillInput
+
   container.append(skillInput);
   container.append(skillInputButton);
 
@@ -105,6 +107,13 @@ form.addEventListener('submit', function (event) {
   person.name = form.name.value;
   person.surname = form.surname.value;
   person.age = form.age.value;
+  person.skills = [];
+
+  // extragem campurile prefixate cu skill- din form
+  const skillsNames = form.querySelectorAll('input[name^="skill-"]');
+  skillsNames.forEach(function (skillInput) {
+    person.skills.push(skillInput.value);
+  });
 
   clearDisplay();
   const personDisplay = render(person);
@@ -205,12 +214,32 @@ form.addEventListener('click', function (event) {
     return;
   }
 
-  const saveSkillButton = target;
-  const parentElement = saveSkillButton.parentElement;
+  saveSkill(target);
+});
+
+form.children[1].addEventListener('keydown', function (event) {
+  const target = event.target;
+
+  if (
+    target.nodeName !== 'INPUT' ||
+    !target.name.startsWith('skill-') ||
+    event.key !== 'Enter'
+  ) {
+    return;
+  }
+
+  event.stopPropagation();
+  event.preventDefault();
+
+  saveSkill(target);
+});
+
+function saveSkill(target) {
+  const parentElement = target.parentElement;
 
   // copy value from input to skillText
-  //  (tema, early return)
-  const skillInput = parentElement.querySelector('input[name^="skill-]"');
+  // (tema, early return)
+  const skillInput = parentElement.querySelector('input[name^="skill-"]');
   const value = skillInput.value;
 
   // insert code here
@@ -218,18 +247,16 @@ form.addEventListener('click', function (event) {
   const skillText = parentElement.querySelector('.skillText');
   skillText.innerText = value;
   skillText.hidden = false;
-  // hide this button
-  saveSkillButton.hidden = true;
 
   // hide cancel
   parentElement.querySelector('.cancelEditSkillButton').hidden = true;
-  // change type to hidden
+  // change type to
   skillInput.type = 'hidden';
   // show edit
   parentElement.querySelector('.editSkillButton').hidden = false;
   // show delete
   parentElement.querySelector('.deleteSkillButton').hidden = false;
-});
+}
 
 // hoisted
 function clearDisplay() {
@@ -246,6 +273,10 @@ function render(person) {
   personDisplay.classList.add(personDisplayClass);
 
   personDisplay.append(renderPerson(person));
+  const skillsUl = renderSkills(person.skills);
+  if (skillsUl !== null) {
+    personDisplay.append(skillsUl);
+  }
 
   return personDisplay;
 }
@@ -257,4 +288,26 @@ function renderPerson(person) {
   paragraph.innerText = `${person.name} ${person.surname}: ${person.age}`;
 
   return paragraph;
+}
+
+function renderSkills(skills = []) {
+  if (skills.length <= 0) {
+    return null;
+  }
+
+  const container = new DocumentFragment();
+  const heading = document.createElement('h3');
+  heading.innerText = 'Skills';
+  container.append(heading);
+
+  const ul = document.createElement('ul');
+  skills.forEach(function (skillName) {
+    const li = document.createElement('li');
+    li.innerText = skillName;
+    ul.append(li);
+  });
+
+  container.append(ul);
+
+  return container;
 }
