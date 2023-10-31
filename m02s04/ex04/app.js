@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', function () {
   personForm.addEventListener('submit', function (event) {
     event.preventDefault();
 
+    const form = event.currentTarget;
+
     const data = {
       name: form.name.value,
       surname: form.surname.value,
